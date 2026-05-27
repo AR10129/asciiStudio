@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-brutalDark text-brutalLight font-mono;
+  }
+}
+
+.glitch-effect {
+  animation: glitch-anim 2s infinite linear alternate-reverse;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+  display: inline-block;
+  will-change: transform;
+}
+
+@keyframes glitch {
+  2%, 64% { transform: translate(2px,0) skew(0deg); color: #ff007f; }
+  4%, 60% { transform: translate(-2px,0) skew(0deg); color: #00ff41; }
+  62% { transform: translate(0,0) skew(5deg); }
+  66% { color: inherit; }
+}
+
+.brutalist-box {
+  border: 4px solid #f4f4f4;
+  box-shadow: 6px 6px 0px #ff007f;
+  background-color: #0a0a0a;
+}
+.brutalist-button {
+  border: 4px solid #f4f4f4;
+  box-shadow: 4px 4px 0px #00ff41;
+  transition: all 0.1s ease;
+  font-family: "Space Mono", monospace;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.brutalist-button:active {
+  box-shadow: 0px 0px 0px #00ff41;
+  transform: translate(4px, 4px);
+}
+.brutalist-button-pink {
+  box-shadow: 4px 4px 0px #ff007f;
+}
+.brutalist-button-pink:active {
+  box-shadow: 0px 0px 0px #ff007f;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+  border-left: 2px solid #333;
+}
+::-webkit-scrollbar-thumb {
+  background: #f4f4f4;
+  border: 2px solid #0a0a0a;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ff007f;
+}
+
+.pacman-path {
+  position: absolute;
+  pointer-events: none;
+}
+.pacman-1 {
+  top: 15%;
+  animation: walkRight 15s linear infinite;
+}
+.pacman-2 {
+  top: 75%;
+  animation: walkLeft 18s linear infinite;
+}
+@keyframes walkRight {
+  0% { transform: translateX(-300px); }
+  100% { transform: translateX(110vw); }
+}
+@keyframes walkLeft {
+  0% { transform: translateX(110vw); }
+  100% { transform: translateX(-300px); }
+}
+
+@keyframes chomp-open {
+  0%, 49.9% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@keyframes chomp-closed {
+  0%, 49.9% { opacity: 0; }
+  50%, 100% { opacity: 1; }
+}
+.animate-chomp-open {
+  animation: chomp-open 0.4s infinite;
+}
+.animate-chomp-closed {
+  animation: chomp-closed 0.4s infinite;
+}

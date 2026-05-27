@@ -189,10 +189,11 @@ export const AsciiCanvas: React.FC<AsciiCanvasProps> = ({ options, onCapture, on
       return;
     }
 
-    // Try mp4 first for maximum mobile compatibility, fallback to webm
-    let mimeType = 'video/mp4';
+    // Android Chrome produces corrupted mp4s from canvas captureStream. 
+    // We MUST prefer webm for Android/Desktop, and fallback to mp4 for iOS Safari.
+    let mimeType = 'video/webm';
     if (!MediaRecorder.isTypeSupported(mimeType)) {
-      mimeType = 'video/webm';
+      mimeType = 'video/mp4';
     }
 
     // Playback at 45 fps to make it significantly faster

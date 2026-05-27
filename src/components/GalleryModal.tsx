@@ -25,13 +25,38 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({ isOpen, onClose, sna
           <head><title>Ascii Capture</title></head>
           <body>
             ${isVideo 
-              ? `<video src="${snap}" controls autoPlay loop style="max-width: 100%; max-height: 100%;"></video>` 
+              ? `<video src="${snap}" controls autoPlay loop muted playsInline style="max-width: 100%; max-height: 100%;"></video>` 
               : `<img src="${snap}" style="max-width: 100%; max-height: 100%;" />`
             }
           </body>
         </html>
       `);
       newWindow.document.close();
+    }
+  };
+
+  const handleDownload = async (snap: string, isVideo: boolean) => {
+    try {
+        const res = await fetch(snap);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        const ext = isVideo ? (blob.type.includes('webm') ? 'webm' : 'mp4') : 'png';
+        a.download = isVideo ? `boomerang_${Date.now()}.${ext}` : `snapshot_${Date.now()}.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 100);
+    } catch (e) {
+        console.error("Download failed, using fallback:", e);
+        const a = document.createElement('a');
+        a.href = snap;
+        a.download = isVideo ? `boomerang_${Date.now()}.${snap.includes('webm') ? 'webm' : 'mp4'}` : `snapshot_${Date.now()}.png`;
+        a.click();
     }
   };
 
@@ -77,12 +102,7 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({ isOpen, onClose, sna
                                 )}
                                 <div className="flex gap-2">
                                     <button 
-                                        onClick={() => {
-                                            const a = document.createElement('a');
-                                            a.href = snap;
-                                            a.download = isVideo ? `boomerang_${Date.now()}.${snap.includes('webm') ? 'webm' : 'mp4'}` : `snapshot_${Date.now()}.png`;
-                                            a.click();
-                                        }}
+                                        onClick={() => handleDownload(snap, isVideo)}
                                         className="flex-1 bg-neonGreen text-brutalDark py-2 font-bold uppercase hover:bg-brutalLight transition-colors text-xs text-center"
                                     >
                                         Download

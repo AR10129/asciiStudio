@@ -18,6 +18,7 @@ export const AsciiCanvas: React.FC<AsciiCanvasProps> = ({ options, onCapture, on
 
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [flash, setFlash] = useState(false);
   const framesRef = useRef<ImageData[]>([]);
   const isRecordingRef = useRef(false);
   const frameCountRef = useRef(0);
@@ -165,8 +166,32 @@ export const AsciiCanvas: React.FC<AsciiCanvasProps> = ({ options, onCapture, on
     };
   }, [options]);
 
+  const playClickSound = () => {
+    try {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(800, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.1);
+    } catch (e) {
+        console.error("Audio error:", e);
+    }
+  };
+
   const handleScreenshotClick = () => {
     if (canvasRef.current) {
+      setFlash(true);
+      playClickSound();
+      setTimeout(() => setFlash(false), 150);
       const dataUrl = canvasRef.current.toDataURL('image/png');
       onCapture(dataUrl);
     }
@@ -233,6 +258,10 @@ export const AsciiCanvas: React.FC<AsciiCanvasProps> = ({ options, onCapture, on
   const handleBoomerangClick = () => {
     if (isRecordingRef.current || isProcessing) return;
     
+    setFlash(true);
+    playClickSound();
+    setTimeout(() => setFlash(false), 150);
+
     setIsRecording(true);
     isRecordingRef.current = true;
     framesRef.current = [];
@@ -242,12 +271,16 @@ export const AsciiCanvas: React.FC<AsciiCanvasProps> = ({ options, onCapture, on
     setTimeout(() => {
       isRecordingRef.current = false;
       setIsRecording(false);
+      setFlash(true);
+      playClickSound();
+      setTimeout(() => setFlash(false), 150);
       processBoomerang();
     }, 2500);
   };
 
   return (
     <div className={`relative w-full h-full brutalist-box flex flex-col items-center justify-center ${options.glitch ? 'glitch-effect' : ''}`}>
+        {flash && <div className="absolute inset-0 bg-white z-50 opacity-80 pointer-events-none transition-opacity duration-75" />}
         <video 
             ref={videoRef} 
             className="absolute top-0 left-0 opacity-0 pointer-events-none -z-10 w-1 h-1" 

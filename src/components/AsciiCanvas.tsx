@@ -166,24 +166,70 @@ export const AsciiCanvas: React.FC<AsciiCanvasProps> = ({ options, onCapture, on
     };
   }, [options]);
 
-  const playClickSound = () => {
+  const playSynthClick = () => {
     try {
         const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
         if (!AudioContext) return;
         const ctx = new AudioContext();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(800, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.1);
-        gain.gain.setValueAtTime(0.1, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.1);
+        
+        const clack = ctx.createOscillator();
+        const clackGain = ctx.createGain();
+        clack.type = 'square';
+        clack.frequency.setValueAtTime(150, ctx.currentTime);
+        clack.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.03);
+        clackGain.gain.setValueAtTime(0.8, ctx.currentTime);
+        clackGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.03);
+        clack.connect(clackGain);
+        clackGain.connect(ctx.destination);
+        clack.start();
+        clack.stop(ctx.currentTime + 0.03);
+
+        const snap = ctx.createOscillator();
+        const snapGain = ctx.createGain();
+        snap.type = 'sine';
+        snap.frequency.setValueAtTime(1200, ctx.currentTime);
+        snap.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.08);
+        snapGain.gain.setValueAtTime(0.5, ctx.currentTime);
+        snapGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+        snap.connect(snapGain);
+        snapGain.connect(ctx.destination);
+        snap.start();
+        snap.stop(ctx.currentTime + 0.08);
+
+        const bufferSize = ctx.sampleRate * 0.1; 
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 4000;
+        filter.Q.value = 1;
+        const noiseGain = ctx.createGain();
+        noiseGain.gain.setValueAtTime(0, ctx.currentTime);
+        noiseGain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.01); 
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+        noise.connect(filter);
+        filter.connect(noiseGain);
+        noiseGain.connect(ctx.destination);
+        noise.start();
     } catch (e) {
         console.error("Audio error:", e);
+    }
+  };
+
+  const playClickSound = () => {
+    try {
+        const audio = new Audio('/shutter.mp3');
+        audio.play().catch(() => {
+            // Fallback to synth if file doesn't exist
+            playSynthClick();
+        });
+    } catch (e) {
+        playSynthClick();
     }
   };
 
